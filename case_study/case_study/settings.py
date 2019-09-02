@@ -55,13 +55,13 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
-    "DATE_INPUT_FORMATS": ["%d/%m/%Y"],
-    # # Use Django's standard `django.contrib.auth` permissions,
-    # # or allow read-only access for unauthenticated users.
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    #     'rest_framework.renderers.<corresponding_renderer>',
-    # ]
+    # ],
+    "DATE_INPUT_FORMATS": ["%d/%m/%Y"],
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    
 }
 
 ROOT_URLCONF = 'case_study.urls'

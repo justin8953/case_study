@@ -24,6 +24,20 @@ def create_call():
    Call.objects.create(call_id=1,investName="Investment 1",investRequire=9500000,calledDate='2018-01-31')
    Call.objects.create(investName="Investment 2",investRequire=10000000,calledDate='2018-04-30')
 
+class FundSerializerTest(TestCase):
+   def setUp(self):
+      data = {
+         'name': 'Fund 1'
+      }
+      serializer = FundSerializer(data=data)
+      if (serializer.is_valid()):
+         serializer.save()
+         print(serializer.data)
+   def testSerializerCreate(self):
+      fund = Fund.objects.get(id=1)
+      self.assertEqual(fund.name, 'Fund 1')
+
+
 class FundTestCase(TestCase):
    def setUp(self):
       create_fund()
@@ -54,6 +68,34 @@ class FundTestCase(TestCase):
       # Clean testing case
       funds = Fund.objects.all()
       funds.delete()
+
+class CommitSerializerTest(TestCase):
+   def setUp(self):
+      fundData = {
+         'name': 'Fund 1',
+      }
+      serializer = FundSerializer(data=fundData)
+      if (serializer.is_valid()):
+         serializer.save()
+         print(serializer.data)
+      commitData = {
+         'committedDate':'31/12/2018',
+         'amount':10000000,
+         'fund': 1
+      }
+      serializer2 = CommitmentSerializer(data=commitData)
+      print(serializer2)
+      if (serializer2.is_valid()):
+         serializer2.save()
+         print(serializer2.data)
+      else:
+         print(serializer2.errors)
+   def testSerializerCreate(self):
+      fund = Fund.objects.get(id=1)
+      self.assertEqual(fund.name, 'Fund 1')
+      commit = Commitment.objects.get(id=1)
+      self.assertEqual(commit.fund, fund)
+
 
 class CommitmentTestCase(TestCase):
    def setUp(self):

@@ -82,11 +82,16 @@ const Callform = (props) =>{
 
   //  Submit call and fund investment
   const confirm = () =>{
-    var requirement = parseInt(callAmount)
+    var investRequire = parseInt(callAmount)
+    var unformattedDate = new Date(date)
+    console.log(unformattedDate)
+
+    var calledDate = unformattedDate.getDate() + '/' + (unformattedDate.getMonth()+1) +'/'+unformattedDate.getFullYear()
+    console.log(calledDate)
     const data = {
       investName,
-      requirement,
-      date
+      investRequire,
+      calledDate
     } 
     var url = "http://127.0.0.1:8000/calls/"
     // Create new call
@@ -95,13 +100,13 @@ const Callform = (props) =>{
         // Then create each fund investment
         var commit_id = e.commit_id
         var fund_id = e.fund_id
-        var  invest_amount =e.invest_amount
+        var  investAmount =e.invest_amount
         var call_id = callId + 1
         var req = {
           call_id,
           commit_id,
           fund_id,
-          invest_amount
+          investAmount
         }
         var url = "http://127.0.0.1:8000/invests/"
         axios.post(url, req).then((res)=>{

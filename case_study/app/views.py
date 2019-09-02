@@ -22,24 +22,17 @@ class FundViewSet(viewsets.ViewSet):
       serializer = FundSerializer(fund)
       return Response(serializer.data)
    def create(self, request):
-      try:
-         data = list(request.data.values())[0]
-         fund = Fund.objects.create(name=data)
-         serializer = FundSerializer(fund)
+      #  Transfer Queryset to string
+      data = json.dumps(request.data)
+      # Transfer string to Dict
+      data = json.loads(data)
+      serializer = FundSerializer(data=data)
+      if (serializer.is_valid()):
+         serializer.save()
          return Response(serializer.data)
-      except:
-         return Response ("Fail to create",status=status.HTTP_404_NOT_FOUND)
-   def update(self, request, pk=None):
-      try:
-         queryset = Fund.objects.all()
-         fund = get_object_or_404(queryset, pk = pk)
-         data = list(request.data.values())[0]
-         fund.name = data
-         fund.save()
-         serializer = FundSerializer(fund)
-         return Response(serializer.data)
-      except:
-         return Response ("Fail to update",status=status.HTTP_404_NOT_FOUND)
+      else:
+         print(serializer.errors)
+         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class CommitViewSet(viewsets.ViewSet):
    """
@@ -55,31 +48,16 @@ class CommitViewSet(viewsets.ViewSet):
       serializer = CommitmentSerializer(commit)
       return Response(serializer.data) 
    def create(self, request):
-      try:
-         fund_id = request.data['fund_id']
-         date = request.data['date']
-         amount = request.data['amount']
-         funds = Fund.objects.all()
-         fund = get_object_or_404(funds, pk = fund_id)
-         commit = Commitment.objects.create(fund=fund, committedDate = date, amount = amount )
-         serializer = CommitmentSerializer(commit)
+      #  Transfer Queryset to string
+      data = json.dumps(request.data)
+      # Transfer string to Dict
+      data = json.loads(data)
+      serializer = CommitmentSerializer(data = data)
+      if(serializer.is_valid()):
+         serializer.save()
          return Response(serializer.data)
-      except:
-         return Response ("Fail to create",status=status.HTTP_404_NOT_FOUND)
-   
-   # def update(self, request, pk=None):
-      
-   #    try:
-   #       queryset = Fund.objects.all()
-   #       fund = get_object_or_404(queryset, pk = pk)
-   #       data = list(request.data.values())[0]
-   #       fund.name = data
-   #       fund.save()
-   #       serializer = FundSerializer(fund)
-   #       return Response(serializer.data)
-   #    except:
-   #       return Response ("Fail to update",status=status.HTTP_404_NOT_FOUND)
-
+      else:
+         return Response (serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 class CallViewSet(viewsets.ViewSet):
    """
    A viewset for viewing and editing user instances.
@@ -96,8 +74,8 @@ class CallViewSet(viewsets.ViewSet):
       return Response(serializer.data)
    
    def create(self, request):
-      print(request.data)
       try:
+         # Need to fixed
          date = request.data['date']
          investName = request.data['investName']
          amount = request.data['requirement']
@@ -130,18 +108,15 @@ class FundInvestViewSet(viewsets.ViewSet):
    def create(self, request):
       print(request.data)
       try:
+         # Need to fixed
          call_id = request.data['call_id']
          commit_id = request.data['commit_id']
          fund_id = request.data['fund_id']
          call = Call.objects.get(call_id=call_id)
-         print("Hi")
          fund = Fund.objects.get(pk=fund_id)
-         print("Hi")
          commit = Commitment.objects.get(pk=commit_id)
          investAmount = request.data['invest_amount']
-         print("Hi")
          fundinvest = FundInvest.objects.create(call_id = call, commit_id = commit, fund_id=fund, investAmount=investAmount)
-         print("Hi")
          serializer = FundInvestSerializer(fundinvest)
          return Response(serializer.data)
 
