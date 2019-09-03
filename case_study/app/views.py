@@ -74,19 +74,17 @@ class CallViewSet(viewsets.ViewSet):
       return Response(serializer.data)
    
    def create(self, request):
-      try:
-         # Need to fixed
-         date = request.data['date']
-         investName = request.data['investName']
-         amount = request.data['requirement']
-         call = Call.objects.create(calledDate = date, investName = investName, investRequire=amount)
-         call.call_id = call.pk
-         call.save()
-         serializer = CallSerializer(call)
+      #  Transfer Queryset to string
+      data = json.dumps(request.data)
+      # Transfer string to Dict
+      data = json.loads(data)
+      serializer = CallSerializer(data = data)
+      if serializer.is_valid():
+         serializer.save()
          return Response(serializer.data)
-
-      except:
-         return Response ("Fail to create",status=status.HTTP_404_NOT_FOUND)
+      else:
+         print(serializer.errors)
+         return Response (serializer.errors,status=status.HTTP_400_BAD_REQUEST)
   
 class FundInvestViewSet(viewsets.ViewSet):
 
@@ -106,22 +104,17 @@ class FundInvestViewSet(viewsets.ViewSet):
       return Response(serializer.data)
    
    def create(self, request):
-      print(request.data)
-      try:
-         # Need to fixed
-         call_id = request.data['call_id']
-         commit_id = request.data['commit_id']
-         fund_id = request.data['fund_id']
-         call = Call.objects.get(call_id=call_id)
-         fund = Fund.objects.get(pk=fund_id)
-         commit = Commitment.objects.get(pk=commit_id)
-         investAmount = request.data['invest_amount']
-         fundinvest = FundInvest.objects.create(call_id = call, commit_id = commit, fund_id=fund, investAmount=investAmount)
-         serializer = FundInvestSerializer(fundinvest)
+      #  Transfer Queryset to string
+      data = json.dumps(request.data)
+      # Transfer string to Dict
+      data = json.loads(data)
+      serializer = FundInvestSerializer(data = data)
+      if serializer.is_valid():
+         serializer.save()
          return Response(serializer.data)
-
-      except:
-         return Response ("Fail to create",status=status.HTTP_404_NOT_FOUND)
+      else:
+         print(serializer.errors)
+         return Response (serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
 

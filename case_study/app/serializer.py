@@ -38,6 +38,15 @@ class CallSerializer(serializers.ModelSerializer):
    class Meta:
       model = Call
       fields = '__all__'
+   
+   def create(self, validated_data):
+      if "call_id" in validated_data.keys():
+         call = Call.objects.create(**validated_data)
+      else:
+         call = Call.objects.create(investName=validated_data['investName'], investRequire=validated_data['investRequire'], calledDate= validated_data['calledDate'])
+         call.call_id = call.id
+         call.save()
+      return call
 
 class FundInvestSerializer(serializers.ModelSerializer):
    

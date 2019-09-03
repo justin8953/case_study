@@ -24,20 +24,6 @@ def create_call():
    Call.objects.create(call_id=1,investName="Investment 1",investRequire=9500000,calledDate='2018-01-31')
    Call.objects.create(investName="Investment 2",investRequire=10000000,calledDate='2018-04-30')
 
-class FundSerializerTest(TestCase):
-   def setUp(self):
-      data = {
-         'name': 'Fund 1'
-      }
-      serializer = FundSerializer(data=data)
-      if (serializer.is_valid()):
-         serializer.save()
-         print(serializer.data)
-   def testSerializerCreate(self):
-      fund = Fund.objects.get(id=1)
-      self.assertEqual(fund.name, 'Fund 1')
-
-
 class FundTestCase(TestCase):
    def setUp(self):
       create_fund()
@@ -69,34 +55,30 @@ class FundTestCase(TestCase):
       funds = Fund.objects.all()
       funds.delete()
 
-class CommitSerializerTest(TestCase):
+
+class FundSerializerTestCase(TestCase):
    def setUp(self):
-      fundData = {
-         'name': 'Fund 1',
+      data = {
+         'name': 'Fund 1'
       }
-      serializer = FundSerializer(data=fundData)
+      serializer = FundSerializer(data=data)
       if (serializer.is_valid()):
          serializer.save()
          print(serializer.data)
-      commitData = {
-         'committedDate':'31/12/2018',
-         'amount':10000000,
-         'fund': 1
-      }
-      serializer2 = CommitmentSerializer(data=commitData)
-      print(serializer2)
-      if (serializer2.is_valid()):
-         serializer2.save()
-         print(serializer2.data)
       else:
-         print(serializer2.errors)
-   def testSerializerCreate(self):
+         print(serializer.errors)
+      create_fund()
+      funds = Fund.objects.all()
+      self.fundSerializer = FundSerializer(funds, many=True)
+
+   def test_create(self):
       fund = Fund.objects.get(id=1)
       self.assertEqual(fund.name, 'Fund 1')
-      commit = Commitment.objects.get(id=1)
-      self.assertEqual(commit.fund, fund)
-
-
+   
+   def test_list(self):
+      result = self.fundSerializer.data
+      self.assertEqual(len(result), 5)
+   
 class CommitmentTestCase(TestCase):
    def setUp(self):
       # Create Funds
@@ -146,12 +128,68 @@ class CommitmentTestCase(TestCase):
    def test_commitment_formattedDate(self):
       commits1 = Commitment.objects.get(pk = 1)
       self.assertEqual(commits1.formattedDate(),'31/12/2017')
+   
+
+class CommitSerializerTestCreateCase(TestCase):
+   def setUp(self):
+      
+      fundData = {
+         'name': 'Fund 1',
+      }
+      serializer = FundSerializer(data=fundData)
+      
+      if (serializer.is_valid()):
+         serializer.save()
+         print(serializer.data)
+      else:
+         print(serializer.errors)
+      
+      commitData = {
+         'committedDate':'31/12/2018',
+         'amount':10000000,
+         'fund': 1
+      }
+      
+      serializer2 = CommitmentSerializer(data=commitData)
+      print(serializer2)
+      if (serializer2.is_valid()):
+         serializer2.save()
+         print(serializer2.data)
+      else:
+         print(serializer2.errors)
+   
+   def test_create(self):
+      fund = Fund.objects.get(id=1)
+      self.assertEqual(fund.name, 'Fund 1')
+      commit = Commitment.objects.get(id=1)
+      self.assertEqual(commit.fund, fund)
+
+class CommitmentSerializerTestListCase (TestCase):
+   
+   def setUp(self):
+      create_fund()
+      funds = Fund.objects.all()
+      # get each Fund
+      fund1 = funds[0]
+      fund2 = funds[1]
+      fund3 = funds[2]
+      fund4 = funds[3]
+      # Five commitments
+      create_commit(fund1,fund2,fund3,fund4)
+      commits = Commitment.objects.all()
+      self.commitmentserializer = CommitmentSerializer(commits, many=True)
+   
+   def test_list (self):
+      data = self.commitmentserializer.data
+      self.assertEqual(len(data), 5)
+
+
 
 class CallTestCase(TestCase):
    def setUp(self):
       print("Create call ....")
       create_call()
-   
+      
    # Test the records created
    def test_call_successCreate (self):
       calls = Call.objects.all()
@@ -172,49 +210,52 @@ class CallTestCase(TestCase):
       call1 = Call.objects.get(pk = 1)
       self.assertEqual(call1.formattedDate(),'31/01/2018')
 
-class FundSerializerTestCase (TestCase):
-   
-   def setUp(self):
-      create_fund()
-      funds = Fund.objects.all()
-      self.fundserializer = FundSerializer(funds[0])
-   
-   def test_fundserializer_successCreate (self):
-      data = self.fundserializer.data
-      self.assertEqual(data, {'id':1, 'name':'Fund 1'})
-
-
-class CommitmentSerializerTestCase (TestCase):
-   
-   def setUp(self):
-      create_fund()
-      funds = Fund.objects.all()
-      # get each Fund
-      fund1 = funds[0]
-      fund2 = funds[1]
-      fund3 = funds[2]
-      fund4 = funds[3]
-      # Five commitments
-      create_commit(fund1,fund2,fund3,fund4)
-      commits = Commitment.objects.all()
-      self.commitmentserializer = CommitmentSerializer(commits[0])
-   
-   def test_commitserializer_successCreate (self):
-      data = self.commitmentserializer.data
-      self.assertEqual(data, {'id':1,'fund':1,'committedDate':'2017-12-31' ,'amount':10000000})
-
 class CallSerializerTestCase (TestCase):
    
    def setUp(self):
       create_call()
       calls = Call.objects.all()
+      self.data = {'investName': 'investment 4', 'investRequire': 100, 'calledDate':'18/02/2019'}
+      self.data2 = {'investName': 'investment 5','call_id':5 ,'investRequire': 100, 'calledDate':'18/02/2019'}
+      
       self.callserializer = CallSerializer(calls[0])
    
    def test_callserializer_successCreate (self):
       data = self.callserializer.data
-      self.assertEqual(data,
-       {'id':1, 'call_id':1, 'investName':'Investment 1',
-      'investRequire':9500000,'calledDate':'2018-01-31'})    
+      self.assertEqual(data['id'],1)
+      self.assertEqual(data['call_id'],1)
+      self.assertEqual(data['investName'],'Investment 1')
+      self.assertEqual(data['investRequire'],9500000)
+      self.assertEqual(data['calledDate'],'31/01/2018')
+   def test_createData(self):
+      data = self.data
+      serializer = CallSerializer(data =data)
+      if serializer.is_valid():
+         serializer.save()
+      else:
+         print(serializer.errors)
+      result = serializer.data
+      self.assertEqual(result['id'],3)
+      self.assertEqual(result['call_id'],3)
+      self.assertEqual(result['investName'],'investment 4')
+      self.assertEqual(result['investRequire'],100)
+      self.assertEqual(result['calledDate'],'18/02/2019')
+
+   def test_createData2(self):
+      data = self.data2
+      serializer = CallSerializer(data =data)
+      if serializer.is_valid():
+         serializer.save()
+         print(serializer.data)
+      else:
+         print(serializer.errors)
+      
+      result = serializer.data
+      self.assertEqual(result['id'],3)
+      self.assertEqual(result['call_id'],5)
+      self.assertEqual(result['investName'],'investment 5')
+      self.assertEqual(result['investRequire'],100)
+      self.assertEqual(result['calledDate'],'18/02/2019')
 
 class SummaryTestCase(TestCase):
 
